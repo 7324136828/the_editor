@@ -1,0 +1,210 @@
+.manage-views {
+  max-height: min(75vh, 760px);
+  overflow-y: auto;
+  padding-right: 6px;
+}
+.manage-views > p {
+  margin-top: 0;
+}
+.manage-views-section {
+  margin: 18px 0;
+}
+.manage-views h3 {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+.manage-view-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--vscode-border);
+  padding: 7px 0;
+}
+.workspace-dialog .manage-view-row label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.manage-view-row input {
+  accent-color: #007acc;
+  flex-shrink: 0;
+}
+.manage-view-row strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.manage-view-row small {
+  display: block;
+  font-size: 11px;
+  color: var(--vscode-tab-inactive-fg);
+  margin-top: 3px;
+}
+.manage-view-order {
+  display: flex;
+  flex-shrink: 0;
+}
+.manage-view-order button:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+.new-view-form {
+  padding-top: 12px;
+  border-top: 1px solid var(--vscode-border);
+}
+.new-view-options {
+  display: flex;
+  gap: 12px;
+}
+.new-view-options > label {
+  flex: 1;
+  min-width: 0;
+}
+.new-view-form .vscode-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.view-status {
+  display: block;
+  font-size: 12px;
+  margin-top: 8px;
+  color: var(--vscode-tab-inactive-fg);
+}
+.custom-notes-view {
+  padding: 12px;
+}
+.custom-notes-view p,
+.custom-notes-view small {
+  color: var(--vscode-tab-inactive-fg);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.custom-notes-view textarea {
+  display: block;
+  width: 100%;
+  min-height: 180px;
+  resize: vertical;
+  padding: 9px;
+  box-sizing: border-box;
+  color: var(--vscode-editor-fg);
+  background: var(--vscode-input-bg, var(--vscode-editor-bg));
+  border: 1px solid var(--vscode-border);
+  font: inherit;
+  line-height: 1.5;
+}
+.custom-notes-view textarea:focus {
+  outline: 1px solid #007acc;
+}
+.custom-notes-view small {
+  display: block;
+  margin-top: 8px;
+}
+.views-empty {
+  padding: 20px 12px;
+  color: var(--vscode-tab-inactive-fg);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.views-empty button {
+  margin-top: 8px;
+}
+.view-header-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.vscode-sidebar-title-strip > span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.vscode-accordion-actions:focus-within,
+.vscode-accordion-header:focus-within .vscode-accordion-actions {
+  opacity: 1;
+}
+.vscode-accordion-toggle {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  min-width: 0;
+  flex: 1;
+  cursor: pointer;
+  text-align: left;
+}
+.vscode-accordion-toggle .vscode-accordion-left {
+  min-width: 0;
+}
+.vscode-accordion-toggle .vscode-accordion-left > span:first-of-type {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vscode-accordion-toggle svg {
+  flex-shrink: 0;
+}
+.vscode-accordion-header > .vscode-accordion-actions {
+  flex-shrink: 0;
+}
+.vscode-right-view-tab button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.vscode-right-view-tab .view-tab-select {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.vscode-right-view-tab .view-tab-select span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 150px;
+}
+.vscode-right-view-tab .view-tab-hide {
+  display: flex;
+  align-items: center;
+  margin-left: 5px;
+  opacity: 0.6;
+}
+.vscode-right-view-tab .view-tab-hide:hover,
+.vscode-right-view-tab .view-tab-hide:focus {
+  opacity: 1;
+}
+.vscode-right-view-header .vscode-right-view-tabs {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  flex: 1;
+}
+.vscode-right-view-header .vscode-right-view-tab {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+.vscode-right-view-header {
+  gap: 5px;
+  flex-shrink: 0;
+}
+.view-delete-confirm {
+  border: 1px solid var(--vscode-border);
+  padding: 10px;
+  margin-bottom: 14px;
+}

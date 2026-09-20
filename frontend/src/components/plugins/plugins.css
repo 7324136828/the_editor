@@ -1,0 +1,137 @@
+.studio-extensions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  overflow: auto;
+  height: 100%;
+  color: var(--vscode-sidebar-fg);
+  font-size: 12px;
+}
+.studio-extension-search input {
+  width: 100%;
+  padding: 6px 8px;
+}
+.studio-extension-caption {
+  font-size: 10px;
+  letter-spacing: 0.7px;
+  display: flex;
+  justify-content: space-between;
+  color: var(--vscode-tab-inactive-fg);
+}
+.studio-extension-caption span {
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: var(--vscode-input-bg);
+}
+.studio-extension-card {
+  padding: 11px;
+  border: 1px solid var(--vscode-border);
+  border-radius: 5px;
+  background: var(--vscode-editor-bg);
+  flex-shrink: 0;
+}
+.studio-extension-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.studio-extension-title > svg {
+  color: #739ee9;
+  flex-shrink: 0;
+}
+.studio-extension-title strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+.studio-extension-title small {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  color: var(--vscode-tab-inactive-fg);
+}
+.studio-extension-card p {
+  margin: 9px 0;
+  line-height: 1.55;
+}
+.studio-extension-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 10px;
+}
+.studio-extension-controls > span {
+  color: var(--vscode-tab-inactive-fg);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.studio-extension-controls button {
+  flex-shrink: 0;
+}
+.studio-extension-commands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+.studio-extensions button {
+  font-size: 10px;
+  padding: 4px 7px;
+  gap: 4px;
+  white-space: normal;
+  text-align: left;
+}
+.studio-extensions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.studio-extension-result {
+  border-left: 2px solid #739ee9;
+  padding: 8px 10px;
+  background: var(--vscode-editor-bg);
+  white-space: pre-wrap;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.studio-extension-hint {
+  font-size: 10px;
+  line-height: 1.55;
+  color: var(--vscode-tab-inactive-fg);
+}
+.studio-extension-footer {
+  padding-bottom: 12px;
+}
+.studio-extension-card pre {
+  font-size: 10px;
+  max-height: 220px;
+  overflow: auto;
+  padding: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+  background: var(--vscode-input-bg);
+  margin: 8px 0;
+}
+.studio-extension-card code {
+  display: block;
+  font-size: 10px;
+  user-select: text;
+  overflow-wrap: anywhere;
+  padding: 7px;
+  background: var(--vscode-input-bg);
+}
+.studio-extension-card summary {
+  cursor: pointer;
+  margin: 8px 0;
+}
+.studio-extension-controls .studio-mcp-connected {
+  color: #61ba83;
+}
+.studio-extension-controls .studio-mcp-error {
+  color: #e99086;
+}
+.studio-extension-empty {
+  padding: 10px 0;
+  color: var(--vscode-tab-inactive-fg);
+}

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.office-data/
+.verification/
+*.tsbuildinfo
+*.log
+.env
+test-results/
+playwright-report/
