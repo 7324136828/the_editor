@@ -1,0 +1,1 @@
+call run_lan.bat --frontend-port 4176 --backend-port 8012
