@@ -1,6 +1,0 @@
-node_modules/
-dist/
-release/
-desktop-release/
-windows-build/
-*.tsbuildinfo
