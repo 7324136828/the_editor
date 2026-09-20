@@ -27,6 +27,36 @@ A unified, production-grade Word, Excel, and PowerPoint document viewer, editor,
 
 ---
 
+## Screenshots
+
+Captured from the running application using the bundled sample documents.
+
+### Word document studio
+
+Edit documents with an outline, review comments, and layout controls alongside the page.
+
+![Word document editor with an executive strategy sample, document outline, and layout inspector](docs/screenshots/word-studio.png)
+
+### Excel workbook studio
+
+Explore worksheets, inspect formulas, and format cells in the spreadsheet workspace.
+
+![Excel workbook editor showing regional sales, a selected revenue formula, and the cell inspector](docs/screenshots/excel-studio.png)
+
+### PowerPoint slide studio
+
+Navigate slides, inspect objects, and edit speaker notes in the presentation workspace.
+
+![PowerPoint editor showing a sample keynote slide, slide navigator, object layers, and speaker notes](docs/screenshots/powerpoint-studio.png)
+
+### Document Copilot
+
+Ask questions about the active document. This example shows a summary produced by the built-in local assistant.
+
+![Document Copilot displaying a summary of the sample Word document, including its outline and reading statistics](docs/screenshots/ai-copilot.png)
+
+---
+
 ## Project Structure
 
 ```
