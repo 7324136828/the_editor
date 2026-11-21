@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Office Editor — Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main class="wrap">
+    <header class="page-head">
+      <h1>Office Editor settings</h1>
+      <span id="save-status" class="save-status" role="status" aria-live="polite"></span>
+    </header>
+    <p class="hint">Changes are saved and applied immediately, including in editor tabs that are already open.</p>
+
+    <section class="card" id="backend">
+      <h2>Local backend</h2>
+      <p class="hint">
+        The optional Rust backend (<code>office-backend</code>) runs on your own computer. It opens
+        <strong>.doc, .rtf and .odt</strong> files, gives the most faithful .docx/.xlsx/.pptx results
+        (including Excel charts) and, when a LaTeX engine such as TeX Live, MiKTeX or Tectonic is
+        installed, compiles LaTeX documents to PDF.
+        Without it the editor still opens and saves .docx, .xlsx, .xls, .ods, .csv, .tsv, .pptx, .tex,
+        .md and .txt with its built-in engines.
+      </p>
+      <label class="switch-row">
+        <input type="checkbox" id="backend-enabled">
+        <span>Use the local backend</span>
+      </label>
+      <div class="field">
+        <label for="backend-url">Backend address</label>
+        <div class="inline">
+          <input type="text" id="backend-url" spellcheck="false" autocomplete="off" placeholder="http://127.0.0.1:47831">
+          <button id="btn-test" class="btn">Test connection</button>
+        </div>
+        <p id="url-error" class="msg error" role="alert" hidden></p>
+        <p id="url-warning" class="msg warn" hidden>
+          This address is not on this computer. Every document you open will be uploaded to it.
+          Only use a server you control.
+        </p>
+      </div>
+      <div id="test-result" class="test-result" aria-live="polite" hidden></div>
+
+      <details class="howto" id="howto">
+        <summary>How to start the backend</summary>
+        <ol>
+          <li>Install Rust from <a href="https://rustup.rs" target="_blank" rel="noopener">rustup.rs</a> (once).</li>
+          <li>Start the backend from the project's <code>src</code> folder:
+            <ul>
+              <li>Windows: double-click <code>src\run-backend.bat</code>
+                (or run <code>powershell -ExecutionPolicy Bypass -File src\run-backend.ps1</code>)</li>
+              <li>macOS / Linux: <code>./src/run-backend.sh</code></li>
+              <li>Any system: <code>cd src</code> then <code>cargo run --release -p office-backend</code></li>
+            </ul>
+          </li>
+          <li>Keep that window open while you work. It listens on <code>127.0.0.1:47831</code>;
+            to use another port set <code>OFFICE_BACKEND_ADDR=127.0.0.1:PORT</code> (or pass the port to the
+            run-backend script) and enter the same address above.</li>
+          <li>Click <em>Test connection</em>.</li>
+        </ol>
+      </details>
+    </section>
+
+    <section class="card" id="web">
+      <h2>Websites</h2>
+      <div class="perm-row">
+        <span id="perm-status" class="pill">Checking…</span>
+        <button id="btn-perm" class="btn small" hidden>Allow</button>
+      </div>
+      <p class="hint">
+        To open documents from websites the extension needs permission to read the files you open
+        from those sites. It is only used for document links and downloads, never for anything else.
+      </p>
+      <label class="switch-row">
+        <input type="checkbox" id="intercept-downloads">
+        <span>Open Office documents from links and downloads in the editor
+          <small>.docx, .doc, .rtf, .odt, .xlsx, .xls, .xlsm, .ods, .pptx. A plain click opens the editor;
+          Ctrl/Shift/middle-click, Alt-click and “Save link as…” keep the browser’s normal behaviour.
+          If a link turns out to be a web page (for example a sign-in page) it opens normally.</small></span>
+      </label>
+      <label class="switch-row sub">
+        <input type="checkbox" id="intercept-text">
+        <span>Also open text files (.txt, .md, .csv, .tsv, .tex)
+          <small>Off by default: links like README.md on GitHub are usually web pages.</small></span>
+      </label>
+      <label class="switch-row">
+        <input type="checkbox" id="intercept-drops">
+        <span>Open Office files dropped onto web pages
+          <small>Off by default. Upload areas, text boxes and editors on the page (Gmail, Drive, GitHub…)
+          always keep receiving your files.</small></span>
+      </label>
+      <p class="hint">Right-click any document link and choose <strong>Open in Office Editor</strong> to open it
+        regardless of these settings.</p>
+    </section>
+
+    <section class="card" id="local">
+      <h2>Files on this computer</h2>
+      <p class="hint">
+        Use <strong>Open file…</strong> in the toolbar popup or the editor (this keeps a link to the file, so
+        <em>Save</em> writes straight back to it), or drag files onto an editor tab.
+        “Open with” from the operating system only works on ChromeOS.
+      </p>
+      <div class="perm-row">
+        <span id="file-status" class="pill">Checking…</span>
+        <button id="btn-file-access" class="btn small" hidden>Open extension details</button>
+      </div>
+      <p class="hint" id="file-hint">
+        Optional: turn on <em>Allow access to file URLs</em> on the extension's details page to open
+        Office files that you drag into the browser window (file:// addresses) in the editor.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Recent files</h2>
+      <p class="hint">The last 10 documents you opened or saved are kept inside the browser so the popup can reopen them.</p>
+      <button id="btn-clear-recents" class="btn">Clear recent files</button>
+    </section>
+  </main>
+  <script src="../content/policy.js"></script>
+  <script type="module" src="options.js"></script>
+</body>
+</html>

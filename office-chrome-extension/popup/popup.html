@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Office Editor</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <span class="logo" aria-hidden="true">O</span>
+    <span class="brand">Office Editor</span>
+    <button id="btn-settings" class="icon-btn" title="Settings" aria-label="Settings">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.6 7.6 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.6 7.6 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1c.5.4 1.1.7 1.7 1l.4 2.6h4l.4-2.6c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.5L19.4 13zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>
+    </button>
+  </header>
+
+  <section class="status-row" aria-live="polite">
+    <span id="backend-dot" class="dot checking" aria-hidden="true"></span>
+    <span id="backend-text">Backend: checking…</span>
+    <a id="backend-help" href="#" hidden>How to start it</a>
+  </section>
+
+  <section id="integration-card" class="card" hidden>
+    <p><strong>Open document links in the editor?</strong><br>
+      Clicking a .docx/.xlsx/.pptx link on a website will open it here instead of downloading it.
+      Needs permission to read the files you open from websites.</p>
+    <div class="card-actions">
+      <button id="btn-enable-web" class="btn primary small">Enable</button>
+      <button id="btn-dismiss-web" class="btn small">Not now</button>
+    </div>
+  </section>
+
+  <section class="actions">
+    <button id="btn-new-word" class="tile">
+      <span class="tile-icon word" aria-hidden="true">W</span>
+      <span>New document</span>
+    </button>
+    <button id="btn-new-excel" class="tile">
+      <span class="tile-icon excel" aria-hidden="true">X</span>
+      <span>New spreadsheet</span>
+    </button>
+    <button id="btn-new-slides" class="tile">
+      <span class="tile-icon slides" aria-hidden="true">P</span>
+      <span>New presentation</span>
+    </button>
+    <button id="btn-new-latex" class="tile">
+      <span class="tile-icon latex" aria-hidden="true">T</span>
+      <span>New LaTeX document</span>
+    </button>
+    <button id="btn-open" class="btn primary wide">Open file…</button>
+    <button id="btn-url" class="btn wide" aria-expanded="false" aria-controls="url-form">Open from URL…</button>
+    <form id="url-form" class="url-form" hidden novalidate>
+      <input id="url-input" type="url" placeholder="https://example.com/report.docx" spellcheck="false" autocomplete="url" aria-label="Document address">
+      <button type="submit" class="btn primary small">Open</button>
+      <p id="url-error" class="error" role="alert" hidden></p>
+    </form>
+  </section>
+
+  <section class="recents">
+    <div class="recents-head">
+      <h3>Recent files</h3>
+      <button id="btn-clear-recents" class="link-btn" hidden>Clear all</button>
+    </div>
+    <ul id="recent-list" class="recent-list"><li class="muted">No recent files</li></ul>
+  </section>
+
+  <footer>
+    <span id="status" role="status"></span>
+  </footer>
+
+  <script src="../content/policy.js"></script>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

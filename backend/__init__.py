@@ -1,1 +1,0 @@
-"""Sample Python backend package."""

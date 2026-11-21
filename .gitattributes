@@ -1,0 +1,15 @@
+# Text files are LF in the repository and in every checkout (as in the original
+# project): tests compare saved bytes against fixtures, and the editors keep
+# the line ending they detect.
+* text=auto eol=lf
+# Windows scripts need CRLF; POSIX scripts need LF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.sh  text eol=lf
+# Binary document fixtures and packages.
+*.docx binary
+*.xlsx binary
+*.pptx binary
+*.png  binary
+*.zip  binary
+*.crx  binary

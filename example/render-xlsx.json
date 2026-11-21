@@ -1,0 +1,77 @@
+{
+  "kind": "excel",
+  "model": {
+    "kind": "excel",
+    "active": 1,
+    "sheets": [
+      {
+        "name": "Sales",
+        "cells": {
+          "A1": { "v": "Month", "t": "s", "b": true },
+          "B1": { "v": "Revenue", "t": "s", "b": true },
+          "C1": { "v": "Units", "t": "s", "b": true },
+          "D1": { "v": "Avg Price", "t": "s", "b": true },
+          "A2": { "v": "Jan", "t": "s" },
+          "B2": { "v": 182400, "t": "n" },
+          "C2": { "v": 3040, "t": "n" },
+          "D2": { "v": 60, "t": "n" },
+          "A3": { "v": "Feb", "t": "s" },
+          "B3": { "v": 195750, "t": "n" },
+          "C3": { "v": 3262, "t": "n" },
+          "D3": { "v": 60, "t": "n" },
+          "A4": { "v": "Mar", "t": "s" },
+          "B4": { "v": 210300, "t": "n" },
+          "C4": { "v": 3505, "t": "n" },
+          "D4": { "v": 60, "t": "n" },
+          "A5": { "v": "Q1 Total", "t": "s" },
+          "B5": { "v": null, "t": "f", "f": "=SUM(B2:B4)" },
+          "C5": { "v": null, "t": "f", "f": "=SUM(C2:C4)" },
+          "D5": { "v": null, "t": "f", "f": "=B5/C5" },
+          "A7": { "v": "Note: figures in USD, net of returns.", "t": "s" }
+        },
+        "colWidths": { "A": 14, "B": 14, "C": 10, "D": 12 }
+      },
+      {
+        "name": "Headcount",
+        "cells": {
+          "A1": { "v": "Team", "t": "s", "b": true },
+          "B1": { "v": "Q1", "t": "s", "b": true },
+          "C1": { "v": "Q2", "t": "s", "b": true },
+          "D1": { "v": "Q3", "t": "s", "b": true },
+          "A2": { "v": "Engineering", "t": "s" },
+          "B2": { "v": 42, "t": "n" },
+          "C2": { "v": 45, "t": "n" },
+          "D2": { "v": 48, "t": "n" },
+          "A3": { "v": "Sales", "t": "s" },
+          "B3": { "v": 18, "t": "n" },
+          "C3": { "v": 20, "t": "n" },
+          "D3": { "v": 22, "t": "n" },
+          "A4": { "v": "Support", "t": "s" },
+          "B4": { "v": 9, "t": "n" },
+          "C4": { "v": 9, "t": "n" },
+          "D4": { "v": 10, "t": "n" },
+          "A6": { "v": "Remote", "t": "b" },
+          "B6": { "v": true, "t": "b" },
+          "A7": { "v": "As of", "t": "s" },
+          "B7": { "v": "2026-09-30", "t": "d" }
+        }
+      },
+      {
+        "name": "Churn",
+        "hidden": true,
+        "cells": {
+          "A1": { "v": "Month", "t": "s" },
+          "B1": { "v": "Churn %", "t": "s" },
+          "A2": { "v": "Jul", "t": "s" },
+          "B2": { "v": 0.021, "t": "n" },
+          "A3": { "v": "Aug", "t": "s" },
+          "B3": { "v": 0.019, "t": "n" },
+          "A4": { "v": "Sep", "t": "s" },
+          "B4": { "v": 0.018, "t": "n" }
+        }
+      }
+    ]
+  },
+  "format": "xlsx",
+  "name": "sample-workbook.xlsx"
+}

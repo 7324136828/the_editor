@@ -1,0 +1,238 @@
+name: Chrome extension
+
+# Tests the extension and its optional Rust backend, then builds the packed
+# extension (.crx, signed CRX3) plus the Chrome Web Store / sideload .zip.
+# Pushing a tag "v<manifest version>" (e.g. v0.3.0) also publishes a GitHub
+# release with the packed extension and prebuilt backend binaries attached.
+#
+# Signing: set the repository secret CRX_PRIVATE_KEY to a PEM RSA key
+# (`node tools/build.mjs --crx` creates office-chrome-extension/key.pem). The
+# extension ID is derived from that key, so keep using the same one. Without
+# the secret (e.g. pull requests from forks) a throwaway key is generated and
+# the .crx gets a different ID on every run.
+
+on:
+  push:
+    branches: [main, chrome-extension]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+env:
+  NODE_VERSION: "24"
+  CARGO_TERM_COLOR: always
+
+jobs:
+  extension-tests:
+    name: Extension unit tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: office-chrome-extension
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: npm test
+        run: npm test
+
+  browser-tests:
+    # The real extension UI driven in headless Edge (preinstalled on Windows
+    # runners; Chrome stable no longer honours --load-extension). Not a
+    # prerequisite of packaging because some checks have timing budgets that a
+    # slow shared runner can miss.
+    name: Browser and end-to-end tests (Edge)
+    runs-on: windows-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash
+        working-directory: office-chrome-extension
+    env:
+      BROWSER_PATH: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+      E2E_PYTHON: python
+      # Shared runners are slower than a dev machine: relax the LaTeX 1 MB timing budgets.
+      E2E_PERF_FACTOR: "3"
+      PYTHON: python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Python validators (openpyxl, python-pptx)
+        run: python -m pip install --disable-pip-version-check openpyxl python-pptx
+      - name: Word editor DOM tests
+        run: node tests/browser/run.mjs
+      - name: Extension UI
+        if: ${{ !cancelled() }}
+        run: node tests/e2e/run.mjs
+      - name: Word features
+        if: ${{ !cancelled() }}
+        run: node tests/e2e/word-features.mjs
+      - name: Excel features
+        if: ${{ !cancelled() }}
+        run: node tests/e2e/excel-features.mjs
+      - name: PowerPoint editor and slide show
+        if: ${{ !cancelled() }}
+        run: node tests/e2e/slides.mjs
+      - name: LaTeX editor
+        if: ${{ !cancelled() }}
+        run: node tests/e2e/latex.mjs
+
+  backend-tests:
+    name: Backend tests (Rust)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        run: rustup toolchain install stable --profile minimal && rustup default stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src
+      - name: cargo test
+        run: cargo test --locked
+
+  package:
+    name: Build packed extension
+    needs: [extension-tests, backend-tests]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: office-chrome-extension
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      id: ${{ steps.build.outputs.id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Read version
+        id: meta
+        run: |
+          version=$(node -p "require('./manifest.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [[ "$GITHUB_REF" == refs/tags/v* && "${GITHUB_REF_NAME#v}" != "$version" ]]; then
+            echo "::error file=office-chrome-extension/manifest.json::Tag $GITHUB_REF_NAME does not match manifest version $version"
+            exit 1
+          fi
+
+      - name: Build .zip and signed .crx
+        id: build
+        env:
+          CRX_PRIVATE_KEY: ${{ secrets.CRX_PRIVATE_KEY }}
+        run: |
+          if [ -z "$CRX_PRIVATE_KEY" ]; then
+            echo "::warning::CRX_PRIVATE_KEY secret is not set; signing with a throwaway key (the extension ID will change every build)."
+          fi
+          node tools/build.mjs --crx --out dist
+          node tools/build.mjs --verify dist/extension.crx
+          id=$(node -p "require('./dist/build-info.json').id")
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          rm -f key.pem
+
+      - name: Name artifacts by version
+        run: |
+          v="${{ steps.meta.outputs.version }}"
+          mkdir -p ../out
+          cp dist/extension.zip "../out/office-editor-$v.zip"
+          cp dist/extension.crx "../out/office-editor-$v.crx"
+          cp dist/build-info.json "../out/build-info.json"
+          (cd ../out && sha256sum office-editor-* > SHA256SUMS.txt && cat SHA256SUMS.txt)
+
+      - name: Summary
+        run: |
+          {
+            echo "### Office Editor ${{ steps.meta.outputs.version }}"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Extension ID | \`${{ steps.build.outputs.id }}\` |"
+            echo "| Packed extension | \`office-editor-${{ steps.meta.outputs.version }}.crx\` |"
+            echo "| Web Store / sideload zip | \`office-editor-${{ steps.meta.outputs.version }}.zip\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: office-editor-extension-${{ steps.meta.outputs.version }}
+          path: out/
+          if-no-files-found: error
+
+  backend-binaries:
+    name: Backend binary (${{ matrix.name }})
+    needs: backend-tests
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: linux-x64, os: ubuntu-latest, exe: office-backend }
+          - { name: windows-x64, os: windows-latest, exe: office-backend.exe }
+          - { name: macos-arm64, os: macos-latest, exe: office-backend }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: src
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        run: rustup toolchain install stable --profile minimal && rustup default stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src
+          key: ${{ matrix.name }}
+      - name: cargo build --release
+        run: cargo build --release --locked -p office-backend
+      - name: Stage binary
+        run: |
+          mkdir -p ../out
+          ext="${{ matrix.exe }}"; ext="${ext#office-backend}"
+          cp "target/release/${{ matrix.exe }}" "../out/office-backend-${{ matrix.name }}$ext"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: office-backend-${{ matrix.name }}
+          path: out/
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub release
+    needs: [package, backend-binaries]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: assets
+          merge-multiple: true
+      - name: Create or update release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          ls -l assets
+          (cd assets && sha256sum office-* > SHA256SUMS.txt)
+          if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            gh release upload "$TAG" assets/* --repo "$REPO" --clobber
+          else
+            gh release create "$TAG" assets/* --repo "$REPO" --title "Office Editor $TAG" --generate-notes \
+              --notes "Extension ID: \`${{ needs.package.outputs.id }}\`. Install the .zip with Load unpacked (unzip first) or upload it to the Chrome Web Store; the .crx is the signed packed extension."
+          fi

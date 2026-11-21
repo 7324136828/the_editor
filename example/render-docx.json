@@ -1,0 +1,57 @@
+{
+  "kind": "word",
+  "model": {
+    "kind": "word",
+    "meta": { "title": "Quarterly Report" },
+    "blocks": [
+      { "type": "h1", "runs": [{ "t": "Quarterly Report" }] },
+      { "type": "p", "runs": [
+        { "t": "Prepared by the " },
+        { "t": "Strategy Team", "b": true },
+        { "t": " for Q3 2026. Revenue grew " },
+        { "t": "12.4%", "i": true },
+        { "t": " year over year. See " },
+        { "t": "the dashboard", "link": "https://example.com/dashboard" },
+        { "t": " for details." }
+      ]},
+      { "type": "h2", "runs": [{ "t": "Highlights" }] },
+      { "type": "list", "list": "ul", "level": 0, "runs": [{ "t": "Revenue up 12.4% YoY" }] },
+      { "type": "list", "list": "ul", "level": 1, "runs": [{ "t": "Enterprise segment drove most of the gain" }] },
+      { "type": "list", "list": "ul", "level": 0, "runs": [{ "t": "Churn reduced to 1.8%" }] },
+      { "type": "list", "list": "ol", "level": 0, "runs": [{ "t": "Expand into APAC next quarter" }] },
+      { "type": "list", "list": "ol", "level": 0, "runs": [{ "t": "Hire two platform engineers" }] },
+      { "type": "h2", "runs": [{ "t": "Regional breakdown" }] },
+      { "type": "table", "rows": [
+        [
+          { "blocks": [{ "type": "p", "runs": [{ "t": "Region", "b": true }] }] },
+          { "blocks": [{ "type": "p", "runs": [{ "t": "Revenue", "b": true }] }] },
+          { "blocks": [{ "type": "p", "runs": [{ "t": "Growth", "b": true }] }] }
+        ],
+        [
+          { "blocks": [{ "type": "p", "runs": [{ "t": "North America" }] }] },
+          { "blocks": [{ "type": "p", "runs": [{ "t": "$4.2M" }] }] },
+          { "blocks": [{ "type": "p", "runs": [{ "t": "+9.1%" }] }] }
+        ],
+        [
+          { "blocks": [{ "type": "p", "runs": [{ "t": "Europe" }] }] },
+          { "blocks": [{ "type": "p", "runs": [{ "t": "$2.8M" }] }] },
+          { "blocks": [{ "type": "p", "runs": [{ "t": "+15.3%" }] }] }
+        ],
+        [
+          { "blocks": [{ "type": "p", "runs": [{ "t": "APAC" }] }] },
+          { "blocks": [{ "type": "p", "runs": [{ "t": "$1.1M" }] }] },
+          { "blocks": [{ "type": "p", "runs": [{ "t": "+21.0%" }] }] }
+        ]
+      ]},
+      { "type": "quote", "runs": [{ "t": "\"Our best quarter yet — the platform is compounding.\" — CFO" }] },
+      { "type": "h3", "runs": [{ "t": "Risks & mitigations", "color": "#b3261e" }] },
+      { "type": "p", "runs": [{ "t": "FX exposure in EUR/JPY hedged through Q1 2027. Hiring plan adds ~$800K run-rate." }] },
+      { "type": "code", "runs": [{ "t": "npm run report:quarterly -- --quarter=Q3" }] },
+      { "type": "pagebreak" },
+      { "type": "h2", "runs": [{ "t": "Appendix: methodology" }] },
+      { "type": "p", "runs": [{ "t": "Revenue recognized per ASC 606. Growth is year-over-year, constant currency." }] }
+    ]
+  },
+  "format": "docx",
+  "name": "quarterly-report.docx"
+}

@@ -1,0 +1,103 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+% Custom macros
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\important}[1]{\textbf{\textcolor{red}{#1}}}
+\newcommand{\greet}[2][Hello]{#1, #2!}
+\definecolor{brand}{HTML}{1F6FEB}
+
+\title{A Short Study of Gradient Descent\thanks{Draft version.}}
+\author{Ada Lovelace \and Alan Turing}
+\date{March 3, 2024}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We study the convergence of gradient descent on smooth convex functions
+and report experiments on two data sets.
+\end{abstract}
+
+\section{Introduction}\label{sec:intro}
+Optimization is at the heart of machine learning.\footnote{See the survey by Bottou et al.}
+Given $f\colon \R^n \to \R$, we look for $x^\star = \arg\min_x f(x)$.
+This text uses ``quotes'', dashes -- like this --- and \emph{emphasis}.
+\greet{World} \greet[Goodbye]{Moon}
+
+As shown in Section~\ref{sec:method} and Figure~\ref{fig:loss}, the method is
+\important{fast}. Prices rose by 5\% \& costs by \$3.
+
+\subsection{Contributions}
+\begin{itemize}
+  \item A simple proof of convergence.
+  \item Experiments on:
+  \begin{enumerate}
+    \item synthetic data, and
+    \item the \texttt{MNIST} data set.
+  \end{enumerate}
+  \item Open-source code at \url{https://example.org/gd?x=1&y=2}.
+\end{itemize}
+
+\section{Method}\label{sec:method}
+The update rule is
+\begin{equation}\label{eq:update}
+  x_{k+1} = x_k - \eta \nabla f(x_k),
+\end{equation}
+where $\eta > 0$ is the step size. Equation~\eqref{eq:update} converges when
+$\eta \leq \frac{1}{L}$ and
+\begin{align}
+  f(x_{k+1}) &\leq f(x_k) - \frac{\eta}{2}\norm{\nabla f(x_k)}^2 \\
+  \sum_{i=1}^{n} \alpha_i^2 &\approx \sqrt{2} \nonumber
+\end{align}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.6\textwidth]{figures/loss_curve.png}
+  \caption{Training loss over 100 epochs.}
+  \label{fig:loss}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\caption{Results}\label{tab:results}
+\begin{tabular}{lcr}
+\toprule
+Method & Accuracy & Time (s) \\
+\midrule
+GD & 0.91 & 12 \\
+SGD & \textbf{0.93} & 4 \\
+\multicolumn{2}{c}{Average} & 8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+See Table~\ref{tab:results} and \cite{bottou2018,nesterov} for details.
+{\color{brand} This sentence is in the brand color.} Here is \colorbox{yellow}{highlighted} text,
+\underline{underlined} and \sout{struck} words, H\textsubscript{2}O and x\textsuperscript{2}.
+First line\\
+second line of the same paragraph.
+
+\begin{verbatim}
+def step(x, grad, eta):
+    return x - eta * grad  # 100% simple
+\end{verbatim}
+
+\begin{quote}
+Premature optimization is the root of all evil.
+\end{quote}
+
+\paragraph{Remarks.} The code uses \verb|numpy.linalg|.
+
+\begin{thebibliography}{9}
+\bibitem{bottou2018} L.~Bottou, F.~Curtis, J.~Nocedal. \newblock Optimization methods for large-scale machine learning. 2018.
+\bibitem{nesterov} Y.~Nesterov. \textit{Introductory Lectures on Convex Optimization}. 2004.
+\end{thebibliography}
+\end{document}
