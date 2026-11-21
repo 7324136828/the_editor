@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Office Editor</title>
+  <link rel="stylesheet" href="viewer.css">
+  <link rel="stylesheet" href="excel.css">
+  <link rel="stylesheet" href="slides.css">
+  <link rel="stylesheet" href="latex.css">
+</head>
+<body>
+  <header id="toolbar">
+    <div class="brand" title="Office Editor">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect width="24" height="24" rx="5" fill="#1a56db"/><path fill="#fff" d="M7 4h7l4 4v12H7z" opacity=".95"/><path fill="#93c5fd" d="M14 4v4h4z"/><rect x="9" y="10.5" width="7" height="1.4" rx=".7" fill="#1e3a8a"/><rect x="9" y="13.5" width="7" height="1.4" rx=".7" fill="#1e3a8a"/><rect x="9" y="16.5" width="4.5" height="1.4" rx=".7" fill="#1e3a8a"/></svg>
+    </div>
+    <div class="doc-title">
+      <span id="doc-name" class="doc-name">Office Editor</span>
+      <span id="dirty-dot" class="dirty" title="Unsaved changes" role="img" aria-label="Unsaved changes" hidden></span>
+      <span id="doc-kind" class="badge"></span>
+    </div>
+    <div class="spacer"></div>
+
+    <div class="menu-wrap">
+      <button id="btn-new" class="tb" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-new" title="Create a new document">New <span class="caret" aria-hidden="true">▾</span></button>
+      <div id="menu-new" class="menu" role="menu" hidden>
+        <button role="menuitem" data-new="word"><span class="mi-icon word" aria-hidden="true">W</span>Word document</button>
+        <button role="menuitem" data-new="excel"><span class="mi-icon excel" aria-hidden="true">X</span>Excel workbook</button>
+        <button role="menuitem" data-new="slides"><span class="mi-icon slides" aria-hidden="true">P</span>PowerPoint presentation</button>
+        <button role="menuitem" data-new="latex"><span class="mi-icon latex" aria-hidden="true">T</span>LaTeX document</button>
+        <div class="menu-sep" role="separator"></div>
+        <button role="menuitem" id="mi-new-template"><span class="mi-icon word" aria-hidden="true">W</span>Word document from template…</button>
+      </div>
+    </div>
+    <button id="btn-open" class="tb" title="Open a file (Ctrl+O)">Open</button>
+    <button id="btn-save" class="tb primary" title="Save (Ctrl+S)" disabled>Save</button>
+    <button id="btn-saveas" class="tb" title="Save a copy in another place or format (Ctrl+Shift+S)" disabled>Save As…</button>
+    <button id="btn-preview" class="tb toggle" title="Show the document as printed pages" aria-pressed="false" hidden>Page view</button>
+    <button id="btn-print" class="tb" title="Print (Ctrl+P)">Print</button>
+    <div class="menu-wrap">
+      <button id="btn-more" class="tb icon" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-more" aria-label="More actions" title="More actions">⋯</button>
+      <div id="menu-more" class="menu menu-right" role="menu" hidden>
+        <button role="menuitem" id="mi-open-url">Open from URL…</button>
+        <button role="menuitem" id="mi-download-original" disabled>Download original file</button>
+        <button role="menuitem" id="mi-page-setup" disabled>Page setup…</button>
+        <button role="menuitem" id="mi-properties" disabled>Document properties…</button>
+        <div class="menu-sep" role="separator"></div>
+        <button role="menuitem" id="mi-shortcuts">Keyboard shortcuts <kbd>?</kbd></button>
+        <button role="menuitem" id="mi-settings">Settings…</button>
+      </div>
+    </div>
+    <button id="backend-status" class="backend-status" title="Checking the office backend…" aria-live="polite">
+      <span id="backend-dot" class="backend-dot checking" aria-hidden="true"></span>
+      <span id="backend-label">Backend…</span>
+    </button>
+  </header>
+
+  <!-- Dismissible info / warning bar (parse warnings, view-only notes, errors with actions) -->
+  <div id="info-bar" class="info-bar" role="status" hidden>
+    <span id="info-icon" class="info-icon" aria-hidden="true">i</span>
+    <div class="info-body">
+      <div id="info-text"></div>
+      <ul id="info-list"></ul>
+    </div>
+    <div id="info-actions" class="info-actions"></div>
+    <button id="info-close" class="info-close" aria-label="Dismiss" title="Dismiss">×</button>
+  </div>
+
+  <!-- Word formatting toolbar -->
+  <div id="word-bar" class="format-bar" role="toolbar" aria-label="Formatting" hidden>
+    <!-- Menus: commands that do not need a button of their own. -->
+    <div class="fb-group fb-menus">
+      <div class="menu-wrap">
+        <button class="fb fb-menu-btn" id="fb-insert" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-insert" title="Insert pictures, symbols, dates, page breaks, headers and footers">Insert <span class="caret" aria-hidden="true">▾</span></button>
+        <div id="menu-insert" class="menu" role="menu" aria-label="Insert" hidden>
+          <button role="menuitem" data-action="link">Link… <kbd>Ctrl+K</kbd></button>
+          <button role="menuitem" data-action="image">Picture…</button>
+          <button role="menuitem" data-action="symbol">Symbol…</button>
+          <button role="menuitem" data-action="datetime">Date &amp; time…</button>
+          <button role="menuitem" data-action="pagebreak">Page break <kbd>Ctrl+Enter</kbd></button>
+          <div class="menu-sep" role="separator"></div>
+          <button role="menuitem" data-action="edit-header">Header</button>
+          <button role="menuitem" data-action="edit-footer">Footer</button>
+          <button role="menuitem" data-action="page-numbers">Page numbers (“Page 1 of 3” in the footer)</button>
+        </div>
+      </div>
+      <div class="menu-wrap">
+        <button class="fb fb-menu-btn" id="fb-format" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-format" title="Text effects, change case, format painter, clear formatting">Format <span class="caret" aria-hidden="true">▾</span></button>
+        <div id="menu-format" class="menu" role="menu" aria-label="Format" hidden>
+          <button role="menuitem" data-cmd="strikeThrough"><s>S</s>&nbsp;Strikethrough</button>
+          <button role="menuitem" data-cmd="superscript">x<sup>2</sup>&nbsp;Superscript</button>
+          <button role="menuitem" data-cmd="subscript">x<sub>2</sub>&nbsp;Subscript</button>
+          <div class="menu-sep" role="separator"></div>
+          <div class="menu-label" aria-hidden="true">Change case</div>
+          <button role="menuitem" data-case="upper">UPPERCASE</button>
+          <button role="menuitem" data-case="lower">lowercase</button>
+          <button role="menuitem" data-case="title">Title Case</button>
+          <button role="menuitem" data-case="sentence">Sentence case.</button>
+          <div class="menu-sep" role="separator"></div>
+          <button role="menuitem" data-action="painter">Format painter</button>
+          <button role="menuitem" data-action="clear">Clear formatting</button>
+        </div>
+      </div>
+      <div class="menu-wrap fb-narrow">
+        <button class="fb fb-menu-btn" id="fb-layout" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-layout" title="Page size, margins, headers, footers and document properties">Layout <span class="caret" aria-hidden="true">▾</span></button>
+        <div id="menu-layout" class="menu" role="menu" aria-label="Layout" hidden>
+          <button role="menuitem" data-action="page-setup">Page setup…</button>
+          <button role="menuitem" data-action="edit-header">Edit header</button>
+          <button role="menuitem" data-action="edit-footer">Edit footer</button>
+          <button role="menuitem" data-action="page-numbers">Add page numbers</button>
+          <div class="menu-sep" role="separator"></div>
+          <button role="menuitem" data-action="properties">Document properties…</button>
+        </div>
+      </div>
+      <div class="menu-wrap">
+        <button class="fb fb-menu-btn" id="fb-view" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-view" title="Find, navigation pane, word count and zoom">View <span class="caret" aria-hidden="true">▾</span></button>
+        <div id="menu-view" class="menu" role="menu" aria-label="View" hidden>
+          <button role="menuitemcheckbox" aria-checked="false" id="mi-nav" data-action="nav">Navigation pane <kbd>Ctrl+Shift+F</kbd></button>
+          <button role="menuitem" data-action="find">Find… <kbd>Ctrl+F</kbd></button>
+          <button role="menuitem" data-action="replace">Replace… <kbd>Ctrl+H</kbd></button>
+          <button role="menuitem" data-action="wordcount">Word count… <kbd>Ctrl+Shift+G</kbd></button>
+          <div class="menu-sep" role="separator"></div>
+          <button role="menuitem" data-action="zoom-in">Zoom in <kbd>Ctrl+=</kbd></button>
+          <button role="menuitem" data-action="zoom-out">Zoom out <kbd>Ctrl+-</kbd></button>
+          <button role="menuitem" data-action="zoom-reset">Actual size (100%) <kbd>Ctrl+0</kbd></button>
+        </div>
+      </div>
+    </div>
+    <span class="sep" aria-hidden="true"></span>
+    <div class="fb-group">
+      <button class="fb" data-cmd="undo" title="Undo (Ctrl+Z)" aria-label="Undo"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 5 3 9.5 8 14M3.5 9.5H12a5 5 0 0 1 0 10h-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -2)"/></svg></button>
+      <button class="fb" data-cmd="redo" title="Redo (Ctrl+Y)" aria-label="Redo"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 5l5 4.5-5 4.5M16.5 9.5H8a5 5 0 0 0 0 10h2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -2)"/></svg></button>
+    </div>
+    <span class="sep" aria-hidden="true"></span>
+    <div class="fb-group">
+      <select id="fb-style" class="fb-select" title="Paragraph style" aria-label="Paragraph style">
+        <option value="p">Normal</option>
+        <option value="h1">Heading 1</option>
+        <option value="h2">Heading 2</option>
+        <option value="h3">Heading 3</option>
+        <option value="h4">Heading 4</option>
+        <option value="quote">Quote</option>
+        <option value="code">Code</option>
+      </select>
+      <select id="fb-font" class="fb-select font" title="Font" aria-label="Font">
+        <option value="">Default font</option>
+        <option>Calibri</option>
+        <option>Arial</option>
+        <option>Cambria</option>
+        <option>Georgia</option>
+        <option>Times New Roman</option>
+        <option>Segoe UI</option>
+        <option>Verdana</option>
+        <option>Tahoma</option>
+        <option>Garamond</option>
+        <option>Courier New</option>
+        <option>Consolas</option>
+      </select>
+      <select id="fb-size" class="fb-select size" title="Font size (pt)" aria-label="Font size">
+        <option value="">Size</option>
+        <option>8</option><option>9</option><option>10</option><option>10.5</option><option>11</option><option>12</option>
+        <option>14</option><option>16</option><option>18</option><option>20</option><option>24</option><option>28</option>
+        <option>32</option><option>36</option><option>48</option><option>72</option>
+      </select>
+    </div>
+    <span class="sep" aria-hidden="true"></span>
+    <div class="fb-group">
+      <button class="fb" data-cmd="bold" data-state="bold" title="Bold (Ctrl+B)" aria-label="Bold"><b>B</b></button>
+      <button class="fb" data-cmd="italic" data-state="italic" title="Italic (Ctrl+I)" aria-label="Italic"><i>I</i></button>
+      <button class="fb" data-cmd="underline" data-state="underline" title="Underline (Ctrl+U)" aria-label="Underline"><u>U</u></button>
+      <button class="fb fb-optional" data-cmd="strikeThrough" data-state="strikeThrough" title="Strikethrough" aria-label="Strikethrough"><s>S</s></button>
+      <button class="fb fb-optional" data-cmd="superscript" data-state="superscript" title="Superscript" aria-label="Superscript">x<sup>2</sup></button>
+      <button class="fb fb-optional" data-cmd="subscript" data-state="subscript" title="Subscript" aria-label="Subscript">x<sub>2</sub></button>
+      <label class="fb color-pick" title="Text color">
+        <span class="color-a" aria-hidden="true">A<span id="fb-color-bar" class="color-bar"></span></span>
+        <input type="color" id="fb-color" value="#c00000" aria-label="Text color">
+      </label>
+      <select id="fb-highlight" class="fb-select hl" title="Highlight" aria-label="Highlight color">
+        <option value="">Highlight</option>
+        <option value="#FFFF00">Yellow</option>
+        <option value="#00FF00">Green</option>
+        <option value="#00FFFF">Turquoise</option>
+        <option value="#FF00FF">Pink</option>
+        <option value="#FFA500">Orange</option>
+        <option value="#D3D3D3">Gray</option>
+        <option value="none">No highlight</option>
+      </select>
+      <button class="fb" id="fb-painter" aria-pressed="false" title="Format painter: copy the formatting at the cursor, then select text to apply it (double-click to keep it on, Esc to stop)" aria-label="Format painter"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="2.5" width="12" height="5" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M15 5h1.5v4.2H10V12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><rect x="8.6" y="12" width="2.8" height="6" rx="1" fill="currentColor"/></svg></button>
+    </div>
+    <span class="sep" aria-hidden="true"></span>
+    <div class="fb-group">
+      <button class="fb" data-cmd="justifyLeft" data-state="justifyLeft" title="Align left" aria-label="Align left"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 9h9M3 13h14M3 17h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      <button class="fb" data-cmd="justifyCenter" data-state="justifyCenter" title="Center" aria-label="Center"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M5.5 9h9M3 13h14M5.5 17h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      <button class="fb" data-cmd="justifyRight" data-state="justifyRight" title="Align right" aria-label="Align right"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M8 9h9M3 13h14M8 17h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      <button class="fb fb-optional" data-cmd="justifyFull" data-state="justifyFull" title="Justify" aria-label="Justify"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 9h14M3 13h14M3 17h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    </div>
+    <span class="sep" aria-hidden="true"></span>
+    <div class="fb-group">
+      <button class="fb" data-cmd="insertUnorderedList" data-state="insertUnorderedList" title="Bulleted list" aria-label="Bulleted list"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="4" cy="6" r="1.4" fill="currentColor"/><circle cx="4" cy="10" r="1.4" fill="currentColor"/><circle cx="4" cy="14" r="1.4" fill="currentColor"/><path d="M8 6h9M8 10h9M8 14h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      <button class="fb" data-cmd="insertOrderedList" data-state="insertOrderedList" title="Numbered list" aria-label="Numbered list"><svg viewBox="0 0 20 20" aria-hidden="true"><text x="1.5" y="8" font-size="6" font-family="sans-serif" fill="currentColor">1</text><text x="1.5" y="16" font-size="6" font-family="sans-serif" fill="currentColor">2</text><path d="M8 6h9M8 14h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      <button class="fb fb-narrow" id="fb-outdent" title="Decrease list level (Shift+Tab)" aria-label="Decrease list level"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 5h9M8 10h9M8 15h9M6 7.5 3 10l3 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="fb fb-narrow" id="fb-indent" title="Increase list level (Tab)" aria-label="Increase list level"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 5h9M8 10h9M8 15h9M3 7.5 6 10l-3 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+    <span class="sep" aria-hidden="true"></span>
+    <div class="fb-group">
+      <button class="fb fb-narrow" id="fb-link" title="Insert or edit link (Ctrl+K)" aria-label="Link"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8.5 11.5a3.5 3.5 0 0 0 5 0l2.5-2.5a3.5 3.5 0 0 0-5-5L10 5m1.5 3.5a3.5 3.5 0 0 0-5 0L4 11a3.5 3.5 0 0 0 5 5l1-1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+      <button class="fb fb-narrow" id="fb-image" title="Insert picture" aria-label="Insert picture"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="4" width="15" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="7" cy="8" r="1.5" fill="currentColor"/><path d="m3 15 4.5-4.5 3 3 2-2L17 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>
+      <div class="menu-wrap">
+        <button class="fb" id="fb-table" title="Insert table" aria-label="Insert table" aria-haspopup="dialog" aria-expanded="false"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="3.5" width="15" height="13" rx="1" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 8h15M2.5 12.3h15M7.5 3.5v13M12.5 3.5v13" stroke="currentColor" stroke-width="1.3"/></svg></button>
+        <div id="table-picker" class="menu table-picker" role="dialog" aria-label="Choose table size" hidden>
+          <div id="tp-grid" class="tp-grid"></div>
+          <div id="tp-label" class="tp-label">Insert table</div>
+        </div>
+      </div>
+      <button class="fb fb-optional" id="fb-pagebreak" title="Insert page break (Ctrl+Enter)" aria-label="Insert page break"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 2v5h12V2M4 18v-5h12v5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2 10h3M7.5 10h5M15 10h3" stroke="currentColor" stroke-width="1.6"/></svg></button>
+      <button class="fb fb-optional" id="fb-clear" title="Clear formatting" aria-label="Clear formatting"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4h10M10 4 7 16M12 12l5 5m0-5-5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+    </div>
+    <!-- Shown while the caret is in a table. A compact menu (not a row of
+         buttons) so the toolbar never wraps and the page does not jump. -->
+    <div id="table-tools" class="fb-group table-tools" hidden>
+      <span class="sep" aria-hidden="true"></span>
+      <div class="menu-wrap">
+        <button class="fb table-menu-btn" id="fb-table-menu" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-table" title="Rows, columns and table">Table <span class="caret" aria-hidden="true">▾</span></button>
+        <div id="menu-table" class="menu menu-right" role="menu" hidden>
+          <button role="menuitem" data-table="row-above">Insert row above</button>
+          <button role="menuitem" data-table="row-below">Insert row below</button>
+          <button role="menuitem" data-table="col-left">Insert column left</button>
+          <button role="menuitem" data-table="col-right">Insert column right</button>
+          <div class="menu-sep" role="separator"></div>
+          <button role="menuitem" data-table="del-row">Delete row</button>
+          <button role="menuitem" data-table="del-col">Delete column</button>
+          <button role="menuitem" class="danger" data-table="del-table">Delete table</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Excel bar: sheet tabs + formula bar (ExcelView may add its own controls here) -->
+  <div id="excel-bar" class="format-bar excel-bar" hidden>
+    <div id="sheet-tabs" class="sheet-tabs" role="tablist" aria-label="Sheets"></div>
+    <button id="btn-add-sheet" class="fb" title="Add sheet" aria-label="Add sheet">+ Sheet</button>
+    <span class="sep" aria-hidden="true"></span>
+    <input id="name-box" class="name-box" value="A1" title="Selected cell (type an address and press Enter to jump)" aria-label="Cell address" spellcheck="false">
+    <span class="fx" aria-hidden="true">fx</span>
+    <input id="formula-bar" class="formula-bar" placeholder="Value or =formula" aria-label="Cell contents" spellcheck="false">
+  </div>
+
+  <div id="workspace">
+  <!-- Word navigation pane: live outline of the document's headings -->
+  <nav id="nav-pane" class="nav-pane" aria-label="Navigation pane" hidden>
+    <div class="nav-head">
+      <span class="nav-title">Navigation</span>
+      <button type="button" id="nav-close" class="nav-close" aria-label="Close the navigation pane" title="Close (Ctrl+Shift+F)">×</button>
+    </div>
+    <div id="nav-list" class="nav-list" role="list" aria-label="Headings"></div>
+    <p id="nav-empty" class="nav-empty" hidden>No headings yet. Choose “Heading 1”, “Heading 2”… in the style box to build an outline you can jump around in.</p>
+  </nav>
+
+  <main id="stage">
+    <!-- The Word page: header band, body (the editor), footer band. -->
+    <div id="word-sheet" class="ow-sheet" hidden>
+      <div id="word-header" class="ow-hf ow-header" contenteditable="true" spellcheck="true" role="textbox" aria-multiline="true" aria-label="Header (repeats at the top of every page)" data-placeholder="Header — click to type text that repeats at the top of every page"></div>
+      <article id="word-view" class="ow-page" aria-label="Document" spellcheck="true" hidden></article>
+      <div id="word-footer" class="ow-hf ow-footer" contenteditable="true" spellcheck="true" role="textbox" aria-multiline="true" aria-label="Footer (repeats at the bottom of every page)" data-placeholder="Footer — click to type text that repeats at the bottom of every page"></div>
+      <div id="hf-tools" class="hf-tools" role="toolbar" aria-label="Header and footer tools" hidden>
+        <span id="hf-tools-label" class="hf-tools-label">Header</span>
+        <button type="button" class="hf-btn" data-hf="PAGE" title="Insert the page number (shown as a gray field)">Insert page number</button>
+        <button type="button" class="hf-btn" data-hf="NUMPAGES" title="Insert the total number of pages">Insert total pages</button>
+        <button type="button" class="hf-btn" data-hf="close" title="Back to the document (Esc)">Close</button>
+      </div>
+    </div>
+    <div id="word-preview" class="ow-page docx-preview" aria-label="Page view (read-only)" hidden></div>
+    <div id="excel-view" class="excel-view" hidden></div>
+    <textarea id="text-view" class="text-view" spellcheck="false" aria-label="Text" hidden></textarea>
+    <div id="slides-view" class="slides-view" aria-label="Presentation" hidden></div>
+    <div id="latex-view" class="latex-view" aria-label="LaTeX document" hidden></div>
+    <pre id="print-text" class="print-text" aria-hidden="true"></pre>
+    <div id="drop-hint" class="drop-hint" hidden><div>Drop to open</div></div>
+    <div id="busy" class="busy" hidden><div class="spinner" aria-hidden="true"></div><span id="busy-text">Working…</span></div>
+    <div id="empty-state" class="empty-state" hidden>
+      <div class="empty-card">
+        <h1>Office Editor</h1>
+        <p class="lead">Create, open and edit Word, Excel, PowerPoint and LaTeX documents right in your browser.</p>
+        <div class="empty-new">
+          <button id="empty-new-word" class="tile"><span class="mi-icon word big" aria-hidden="true">W</span><span>Blank document</span></button>
+          <button id="empty-new-excel" class="tile"><span class="mi-icon excel big" aria-hidden="true">X</span><span>Blank workbook</span></button>
+          <button id="empty-new-slides" class="tile"><span class="mi-icon slides big" aria-hidden="true">P</span><span>Blank presentation</span></button>
+          <button id="empty-new-latex" class="tile"><span class="mi-icon latex big" aria-hidden="true">T</span><span>LaTeX document</span></button>
+        </div>
+        <div class="empty-actions">
+          <button id="btn-open2" class="tb primary">Open a file…</button>
+          <button id="btn-open-url" class="tb">Open from URL…</button>
+        </div>
+        <p class="empty-hint">…or drop a file anywhere on this page, or paste it. <button type="button" id="empty-new-template" class="link-btn">Start a Word document from a template…</button></p>
+        <p class="empty-note" id="backend-note"></p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Word find & replace bar (floats over the top-right of the page) -->
+  <div id="find-bar" class="find-bar" role="search" aria-label="Find and replace" hidden>
+    <div class="find-row">
+      <button type="button" id="find-toggle-replace" class="find-btn twisty" aria-expanded="false" aria-controls="find-replace-row" title="Show replace (Ctrl+H)" aria-label="Show replace">▸</button>
+      <input id="find-input" class="find-input" type="search" placeholder="Find in document" aria-label="Find" spellcheck="false" autocomplete="off">
+      <span id="find-count" class="find-count" aria-live="polite">No results</span>
+      <button type="button" id="find-case" class="find-btn opt" aria-pressed="false" title="Match case" aria-label="Match case">Aa</button>
+      <button type="button" id="find-word" class="find-btn opt" aria-pressed="false" title="Whole words only" aria-label="Whole words only"><span class="ul-word">ab</span></button>
+      <button type="button" id="find-prev" class="find-btn" title="Previous match (Shift+Enter)" aria-label="Previous match">↑</button>
+      <button type="button" id="find-next" class="find-btn" title="Next match (Enter)" aria-label="Next match">↓</button>
+      <button type="button" id="find-close" class="find-btn" title="Close (Esc)" aria-label="Close find">×</button>
+    </div>
+    <div id="find-replace-row" class="find-row" hidden>
+      <span class="find-spacer" aria-hidden="true"></span>
+      <input id="replace-input" class="find-input" placeholder="Replace with" aria-label="Replace with" spellcheck="false" autocomplete="off">
+      <button type="button" id="replace-one" class="find-btn wide" title="Replace this match (Enter)">Replace</button>
+      <button type="button" id="replace-all" class="find-btn wide" title="Replace every match">Replace all</button>
+    </div>
+  </div>
+  </div>
+
+  <footer id="statusbar">
+    <span id="status-msg" role="status" aria-live="polite"></span>
+    <span class="spacer"></span>
+    <button type="button" id="doc-stats" class="stats-btn" disabled></button>
+    <div id="zoom-ctl" class="zoom-ctl" role="group" aria-label="Zoom" hidden>
+      <button type="button" id="zoom-out" class="zoom-btn" title="Zoom out (Ctrl+-)" aria-label="Zoom out">−</button>
+      <input type="range" id="zoom-range" min="50" max="200" step="10" value="100" aria-label="Zoom level" title="Zoom (Ctrl+mouse wheel)">
+      <button type="button" id="zoom-in" class="zoom-btn" title="Zoom in (Ctrl+=)" aria-label="Zoom in">+</button>
+      <button type="button" id="zoom-label" class="zoom-label" title="Reset to 100% (Ctrl+0)">100%</button>
+    </div>
+  </footer>
+
+  <input type="file" id="file-input" hidden multiple
+    accept=".docx,.doc,.rtf,.odt,.txt,.md,.markdown,.xlsx,.xls,.xlsm,.csv,.tsv,.ods,.pptx,.tex,.ltx">
+  <input type="file" id="image-input" hidden accept="image/png,image/jpeg,image/gif,image/bmp,image/webp">
+
+  <!-- Generic confirm dialog (unsaved changes, lossy export, …) -->
+  <div id="dialog-modal" class="modal" hidden>
+    <div class="modal-card" role="alertdialog" aria-modal="true" aria-labelledby="dlg-title" aria-describedby="dlg-text">
+      <h3 id="dlg-title"></h3>
+      <p id="dlg-text" class="dlg-text"></p>
+      <div id="dlg-actions" class="modal-actions"></div>
+    </div>
+  </div>
+
+  <!-- Save As dialog -->
+  <div id="saveas-modal" class="modal" hidden>
+    <form id="saveas-form" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="sa-title" novalidate>
+      <h3 id="sa-title">Save As</h3>
+      <p id="sa-reason" class="modal-note" hidden></p>
+      <label>File name <input id="sa-name" spellcheck="false" autocomplete="off" required></label>
+      <label>Format <select id="sa-format"></select></label>
+      <p id="sa-lossy" class="modal-warn" hidden></p>
+      <p id="sa-where" class="modal-hint"></p>
+      <div class="modal-actions">
+        <button type="button" id="sa-cancel" class="tb">Cancel</button>
+        <button type="submit" id="sa-ok" class="tb primary">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Link dialog -->
+  <div id="link-modal" class="modal" hidden>
+    <form id="link-form" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="ln-title" novalidate>
+      <h3 id="ln-title">Insert link</h3>
+      <label>Text to display <input id="ln-text" spellcheck="false" autocomplete="off"></label>
+      <label>Address <input id="ln-url" spellcheck="false" autocomplete="off" placeholder="https://example.com" inputmode="url"></label>
+      <p id="ln-error" class="modal-error" hidden></p>
+      <div class="modal-actions">
+        <button type="button" id="ln-remove" class="tb danger-text" hidden>Remove link</button>
+        <span class="spacer"></span>
+        <button type="button" id="ln-cancel" class="tb">Cancel</button>
+        <button type="submit" id="ln-ok" class="tb primary">Apply</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Open from URL dialog -->
+  <div id="url-modal" class="modal" hidden>
+    <form id="url-form" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="url-title" novalidate>
+      <h3 id="url-title">Open from URL</h3>
+      <label>Address of a Word, Excel or text file <input id="url-input" spellcheck="false" autocomplete="off" placeholder="https://example.com/report.docx" inputmode="url"></label>
+      <p id="url-error" class="modal-error" hidden></p>
+      <div class="modal-actions">
+        <button type="button" id="url-cancel" class="tb">Cancel</button>
+        <button type="submit" id="url-ok" class="tb primary">Open</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Word count -->
+  <div id="wc-modal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="wc-title">
+      <h3 id="wc-title">Word count</h3>
+      <table class="wc-table">
+        <thead><tr><th scope="col"><span class="sr-only">Statistic</span></th><th scope="col" id="wc-col-sel">Selection</th><th scope="col">Document</th></tr></thead>
+        <tbody id="wc-body"></tbody>
+      </table>
+      <p class="modal-hint">Pages and lines are estimates based on the current page setup.</p>
+      <div class="modal-actions">
+        <button type="button" id="wc-close" class="tb primary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Insert symbol -->
+  <div id="sym-modal" class="modal" hidden>
+    <div class="modal-card wide sym-card" role="dialog" aria-modal="true" aria-labelledby="sym-title">
+      <h3 id="sym-title">Insert symbol</h3>
+      <div id="sym-tabs" class="sym-tabs" role="tablist" aria-label="Symbol groups"></div>
+      <div id="sym-grid" class="sym-grid" role="grid" aria-label="Symbols"></div>
+      <div class="sym-foot">
+        <span id="sym-preview" class="sym-preview" aria-hidden="true"></span>
+        <span id="sym-name" class="sym-name">Click a symbol to insert it. Arrow keys move, Enter inserts.</span>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="sym-close" class="tb">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Insert date & time -->
+  <div id="dt-modal" class="modal" hidden>
+    <form id="dt-form" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="dt-title" novalidate>
+      <h3 id="dt-title">Insert date &amp; time</h3>
+      <div id="dt-list" class="dt-list" role="radiogroup" aria-label="Formats"></div>
+      <div class="modal-actions">
+        <button type="button" id="dt-cancel" class="tb">Cancel</button>
+        <button type="submit" id="dt-ok" class="tb primary">Insert</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Page setup -->
+  <div id="ps-modal" class="modal" hidden>
+    <form id="ps-form" class="modal-card ps-card" role="dialog" aria-modal="true" aria-labelledby="ps-title" novalidate>
+      <h3 id="ps-title">Page setup</h3>
+      <div class="ps-grid">
+        <div>
+          <label>Paper size
+            <select id="ps-size">
+              <option value="Letter">Letter (8.5 × 11 in)</option>
+              <option value="A4">A4 (21 × 29.7 cm)</option>
+              <option value="Legal">Legal (8.5 × 14 in)</option>
+              <option value="A3">A3 (29.7 × 42 cm)</option>
+              <option value="A5">A5 (14.8 × 21 cm)</option>
+              <option value="Executive">Executive (7.25 × 10.5 in)</option>
+              <option value="custom" hidden>Custom (from the file)</option>
+            </select>
+          </label>
+          <fieldset class="ps-orient">
+            <legend>Orientation</legend>
+            <label class="radio"><input type="radio" name="ps-orient" value="portrait" id="ps-portrait"> <span class="orient-icon portrait" aria-hidden="true"></span>Portrait</label>
+            <label class="radio"><input type="radio" name="ps-orient" value="landscape" id="ps-landscape"> <span class="orient-icon landscape" aria-hidden="true"></span>Landscape</label>
+          </fieldset>
+          <label>Margins
+            <select id="ps-preset">
+              <option value="normal">Normal</option>
+              <option value="narrow">Narrow</option>
+              <option value="moderate">Moderate</option>
+              <option value="wide">Wide</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+        </div>
+        <div>
+          <div class="ps-margins">
+            <label>Top <input id="ps-top" type="number" min="0" step="0.05" inputmode="decimal"></label>
+            <label>Bottom <input id="ps-bottom" type="number" min="0" step="0.05" inputmode="decimal"></label>
+            <label>Left <input id="ps-left" type="number" min="0" step="0.05" inputmode="decimal"></label>
+            <label>Right <input id="ps-right" type="number" min="0" step="0.05" inputmode="decimal"></label>
+          </div>
+          <label>Units
+            <select id="ps-units">
+              <option value="in">Inches</option>
+              <option value="cm">Centimeters</option>
+            </select>
+          </label>
+          <div class="ps-preview-wrap" aria-hidden="true"><div id="ps-preview" class="ps-preview"><div class="ps-preview-text"></div></div></div>
+        </div>
+      </div>
+      <p id="ps-error" class="modal-error" hidden></p>
+      <div class="modal-actions">
+        <button type="button" id="ps-cancel" class="tb">Cancel</button>
+        <button type="submit" id="ps-ok" class="tb primary">Apply</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Document properties -->
+  <div id="props-modal" class="modal" hidden>
+    <form id="props-form" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="props-title" novalidate>
+      <h3 id="props-title">Document properties</h3>
+      <p class="modal-note">Saved inside the file (File › Info › Properties in Word). The title is also used for web page exports.</p>
+      <label>Title <input id="props-doc-title" autocomplete="off" maxlength="300"></label>
+      <label>Author <input id="props-author" autocomplete="off" maxlength="300"></label>
+      <label>Subject <input id="props-subject" autocomplete="off" maxlength="300"></label>
+      <div class="modal-actions">
+        <button type="button" id="props-cancel" class="tb">Cancel</button>
+        <button type="submit" id="props-ok" class="tb primary">OK</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- New from template -->
+  <div id="tpl-modal" class="modal" hidden>
+    <div class="modal-card tpl-card" role="dialog" aria-modal="true" aria-labelledby="tpl-title">
+      <h3 id="tpl-title">New Word document from a template</h3>
+      <div id="tpl-grid" class="tpl-grid" role="listbox" aria-label="Templates"></div>
+      <div class="modal-actions">
+        <button type="button" id="tpl-cancel" class="tb">Cancel</button>
+        <button type="button" id="tpl-ok" class="tb primary">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard shortcuts -->
+  <div id="shortcuts-modal" class="modal" hidden>
+    <div class="modal-card wide" role="dialog" aria-modal="true" aria-labelledby="ks-title">
+      <h3 id="ks-title">Keyboard shortcuts</h3>
+      <div class="ks-cols">
+        <dl class="ks">
+          <div class="ks-head">General</div>
+          <dt><kbd>Ctrl</kbd>+<kbd>S</kbd></dt><dd>Save</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd></dt><dd>Save As…</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>O</kbd></dt><dd>Open a file</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>P</kbd></dt><dd>Print</dd>
+          <dt><kbd>Esc</kbd></dt><dd>Close a dialog or menu</dd>
+          <dt><kbd>?</kbd></dt><dd>This list</dd>
+        </dl>
+        <dl class="ks">
+          <div class="ks-head">Word: editing</div>
+          <dt><kbd>Ctrl</kbd>+<kbd>B</kbd> / <kbd>I</kbd> / <kbd>U</kbd></dt><dd>Bold / italic / underline</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></dt><dd>Undo / redo</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>K</kbd></dt><dd>Insert or edit link</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>Enter</kbd></dt><dd>Page break</dd>
+          <dt><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd></dt><dd>List level, or next / previous table cell</dd>
+          <dt><kbd>Ctrl</kbd>+click</dt><dd>Open a link</dd>
+          <dt>Format painter, double-click</dt><dd>Keep painting until <kbd>Esc</kbd></dd>
+        </dl>
+        <dl class="ks">
+          <div class="ks-head">Word: tools</div>
+          <dt><kbd>Ctrl</kbd>+<kbd>F</kbd></dt><dd>Find</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>H</kbd></dt><dd>Find and replace</dd>
+          <dt><kbd>Enter</kbd> / <kbd>Shift</kbd>+<kbd>Enter</kbd></dt><dd>Next / previous match</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd></dt><dd>Navigation pane</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd></dt><dd>Word count</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>=</kbd> / <kbd>-</kbd> / <kbd>0</kbd></dt><dd>Zoom in / out / 100%</dd>
+          <dt><kbd>Ctrl</kbd>+mouse wheel</dt><dd>Zoom</dd>
+        </dl>
+        <dl class="ks">
+          <div class="ks-head">Excel</div>
+          <dt>Arrows, <kbd>Tab</kbd>, <kbd>Enter</kbd></dt><dd>Move between cells</dd>
+          <dt><kbd>F2</kbd> or type</dt><dd>Edit a cell</dd>
+          <dt><kbd>Delete</kbd></dt><dd>Clear cells</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd></dt><dd>Copy / paste cells</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>D</kbd> / <kbd>R</kbd></dt><dd>Fill down / right</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>H</kbd></dt><dd>Find / replace</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd></dt><dd>Turn filter on / off</dd>
+          <dt><kbd>Alt</kbd>+<kbd>↓</kbd></dt><dd>Open a filter menu</dd>
+        </dl>
+        <dl class="ks">
+          <div class="ks-head">PowerPoint</div>
+          <dt><kbd>F5</kbd> / <kbd>Shift</kbd>+<kbd>F5</kbd></dt><dd>Present from start / current slide</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>M</kbd></dt><dd>New slide</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>D</kbd></dt><dd>Duplicate selection</dd>
+          <dt>Arrows (+<kbd>Shift</kbd>)</dt><dd>Nudge selection</dd>
+          <dt><kbd>Enter</kbd> / <kbd>Esc</kbd></dt><dd>Edit text / stop editing</dd>
+          <dt><kbd>N</kbd> / <kbd>B</kbd> (slide show)</dt><dd>Notes / black screen</dd>
+        </dl>
+        <dl class="ks">
+          <div class="ks-head">LaTeX</div>
+          <dt><kbd>Ctrl</kbd>+<kbd>B</kbd> / <kbd>I</kbd></dt><dd>Bold / italic</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>/</kbd></dt><dd>Comment / uncomment lines</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>H</kbd></dt><dd>Find / replace</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>G</kbd></dt><dd>Go to line</dd>
+          <dt><kbd>Ctrl</kbd>+<kbd>Space</kbd></dt><dd>Suggest commands</dd>
+          <dt><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd></dt><dd>Indent / outdent</dd>
+        </dl>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="ks-close" class="tb primary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="alert" hidden></div>
+
+  <script src="../vendor/jszip.min.js"></script>
+  <script src="../vendor/docx-preview.min.js"></script>
+  <script src="../vendor/xlsx.full.min.js"></script>
+  <script type="module" src="viewer.js"></script>
+</body>
+</html>

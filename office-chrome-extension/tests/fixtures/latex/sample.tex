@@ -1,0 +1,91 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+
+\title{Fourier Series in Practice}
+\author{Ada Lovelace \and Carl Friedrich Gauss}
+\date{March 2025}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We review how periodic signals are written as sums of sines and cosines and
+show a few results with \emph{numbered equations}, a table and a figure.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+A function $f\colon \R \to \R$ with period $2\pi$ can be expanded as
+\begin{equation}
+  f(x) = \frac{a_0}{2} + \sum_{n=1}^{\infty} \bigl( a_n \cos nx + b_n \sin nx \bigr).
+  \label{eq:fourier}
+\end{equation}
+The coefficients in~\eqref{eq:fourier} are given by
+\begin{align}
+  a_n &= \frac{1}{\pi} \int_{-\pi}^{\pi} f(x) \cos nx \, dx, \\
+  b_n &= \frac{1}{\pi} \int_{-\pi}^{\pi} f(x) \sin nx \, dx. \nonumber
+\end{align}
+
+\subsection{Convergence}
+\begin{theorem}[Dirichlet]
+If $f$ is piecewise smooth, its Fourier series converges to $\frac{1}{2}\bigl(f(x^+) + f(x^-)\bigr)$.
+\end{theorem}
+
+\begin{proof}
+See any textbook, for example~\cite{katznelson}.
+\end{proof}
+
+\section{Examples}
+\label{sec:examples}
+\begin{itemize}
+  \item The square wave has only odd harmonics.
+  \item The sawtooth wave has all harmonics with $b_n = \frac{2(-1)^{n+1}}{n}$.
+  \item Energy: $\norm{f}^2 = \frac{a_0^2}{2} + \sum_n (a_n^2 + b_n^2)$.
+\end{itemize}
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{|l|c|r|}
+    \hline
+    Signal & Harmonics & Amplitude \\
+    \hline
+    Square & odd & $4/(\pi n)$ \\
+    Sawtooth & all & $2/n$ \\
+    \hline
+    \multicolumn{3}{|c|}{Triangle: odd, $8/(\pi n)^2$} \\
+    \hline
+  \end{tabular}
+  \caption{Harmonic content of common signals.}
+  \label{tab:signals}
+\end{table}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.6\textwidth]{figures/square-wave.png}
+  \caption{Partial sums of the square wave.}
+  \label{fig:square}
+\end{figure}
+
+Table~\ref{tab:signals} and Figure~\ref{fig:square} summarize Section~\ref{sec:examples}.%
+\footnote{All examples use $L = \pi$.}
+The matrix
+\[
+  M = \begin{pmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{pmatrix}
+\]
+rotates the plane, and \textcolor{teal}{colored text} or \href{https://en.wikipedia.org/wiki/Fourier_series}{a link} work too.
+
+\begin{thebibliography}{9}
+\bibitem{katznelson} Y.~Katznelson, \emph{An Introduction to Harmonic Analysis}, Cambridge, 2004.
+\end{thebibliography}
+
+\end{document}

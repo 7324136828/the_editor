@@ -1,0 +1,13 @@
+# Normalize text files to LF in the repository.
+* text=auto
+# Windows scripts need CRLF; POSIX scripts need LF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.sh  text eol=lf
+# Binary document fixtures and packages.
+*.docx binary
+*.xlsx binary
+*.pptx binary
+*.png  binary
+*.zip  binary
+*.crx  binary

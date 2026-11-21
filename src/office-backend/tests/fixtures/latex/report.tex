@@ -1,0 +1,72 @@
+\documentclass{report}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{longtable}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem*{remark}{Remark}
+
+\title{Annual Engineering Report}
+\author{Engineering Team}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\chapter{Overview}\label{ch:overview}
+This report summarizes the work of the year.
+
+\section{Goals}\label{sec:goals}
+We had three goals, listed in Section~\ref{sec:goals}.
+
+\begin{description}
+  \item[Speed] Make the build faster.
+  \item[Quality] Reduce the number of bugs.
+\end{description}
+
+\chapter{Results}
+\section{Theory}
+\begin{theorem}[Main result]\label{thm:main}
+Every bounded monotone sequence converges.
+\end{theorem}
+\begin{lemma}
+A Cauchy sequence is bounded.
+\end{lemma}
+\begin{proof}
+Take $\varepsilon = 1$ and use the triangle inequality.
+\end{proof}
+\begin{remark}
+Theorem~\ref{thm:main} is classical.
+\end{remark}
+
+\section{Measurements}
+\begin{longtable}{|l|r|}
+\caption{Build times}\label{tab:build}\\
+\hline
+Month & Minutes \\
+\hline
+\endfirsthead
+\hline
+Month & Minutes \\
+\hline
+\endhead
+\hline
+\endfoot
+January & 42 \\
+February & 38 \\
+March & 35 \\
+\end{longtable}
+
+Table~\ref{tab:build} shows the trend. See also Chapter~\ref{ch:overview}.
+
+\appendix
+\chapter{Raw data}
+\begin{center}
+All raw data is available on request.
+\end{center}
+\newpage
+\begin{flushright}
+Signed, the team
+\end{flushright}
+\end{document}

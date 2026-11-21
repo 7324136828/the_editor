@@ -1,0 +1,14 @@
+{
+  "name": "office-chrome-extension",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Office Chrome Extension - view and edit Word, Excel, PowerPoint and LaTeX documents in Chrome and Edge (Manifest V3)",
+  "scripts": {
+    "test": "node --test --test-isolation=none tests/*.test.js",
+    "build": "node tools/build.mjs",
+    "build:crx": "node tools/build.mjs --crx",
+    "verify-crx": "node tools/build.mjs --verify",
+    "icons": "python tools/gen_icons.py"
+  }
+}
