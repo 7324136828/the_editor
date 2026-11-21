@@ -8,7 +8,8 @@
  *   node tools/build.mjs --verify FILE    check a .crx signature and print its extension ID
  *
  * Options:
- *   --out DIR     output directory (default: dist)
+ *   --out DIR     output directory, relative to the current directory
+ *                 (default: dist/ in this extension folder)
  *   --key FILE    PEM private key used to sign the .crx. Default: the
  *                 CRX_PRIVATE_KEY environment variable (PEM text), else key.pem
  *                 in this folder. If none exists, a new key is generated into
@@ -43,7 +44,7 @@ const JUNK = new Set([".DS_Store", "Thumbs.db", "desktop.ini"]);
 const ZIP_DATE = new Date(Date.UTC(2020, 0, 1, 0, 0, 0));
 
 function parseArgs(argv) {
-  const opts = { out: "dist", crx: false, key: null, verify: null };
+  const opts = { out: null, crx: false, key: null, verify: null };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const next = () => {
@@ -143,7 +144,7 @@ async function main() {
     return;
   }
 
-  const out = path.resolve(ROOT, opts.out);
+  const out = opts.out ? path.resolve(opts.out) : path.join(ROOT, "dist");
   fs.mkdirSync(out, { recursive: true });
   const { manifest, files, bytes } = await buildZip();
   const zipPath = path.join(out, "extension.zip");
@@ -167,7 +168,21 @@ async function main() {
   fs.writeFileSync(path.join(out, "build-info.json"), JSON.stringify(info, null, 2) + "\n");
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+/** True when this file is the entry point (real paths, so symlinks/junctions and npm run work). */
+function isMain() {
+  if (!process.argv[1]) return false;
+  try {
+    const norm = (p) => {
+      const real = fs.realpathSync.native(path.resolve(p));
+      return process.platform === "win32" ? real.toLowerCase() : real;
+    };
+    return norm(process.argv[1]) === norm(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (isMain()) {
   main().catch((err) => {
     console.error(`build failed: ${err.message}`);
     process.exit(1);

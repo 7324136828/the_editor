@@ -87,7 +87,8 @@ or `key.pem` in this folder; if none exists it creates `key.pem` (git-ignored).
 Keep that key: the extension ID is derived from it. On Windows,
 `.\build.ps1` (or `build.bat`) still writes `dist\extension.zip`. The
 GitHub Actions workflow `.github/workflows/chrome-extension.yml` builds both
-files on every push and pull request.
+files on pushes to `main` and `chrome-extension`, on pull requests, on `v*`
+tags (which also publish a GitHub release) and on manual runs.
 
 ## Backend (optional)
 
