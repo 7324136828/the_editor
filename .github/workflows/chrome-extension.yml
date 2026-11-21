@@ -59,6 +59,8 @@ jobs:
     env:
       BROWSER_PATH: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
       E2E_PYTHON: python
+      # Shared runners are slower than a dev machine: relax the LaTeX 1 MB timing budgets.
+      E2E_PERF_FACTOR: "3"
       PYTHON: python
     steps:
       - uses: actions/checkout@v4

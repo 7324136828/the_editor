@@ -10,6 +10,7 @@
  *   E2E_PORT       remote debugging port (default 9352)
  *   E2E_PROFILE    user-data-dir (default: <os tmpdir>/office-ext-latex-e2e-<pid>, deleted afterwards)
  *   E2E_SHOTS      directory for screenshots (default: none)
+ *   E2E_PERF_FACTOR  multiply the 1 MB performance budgets (default 1; CI uses 3)
  */
 
 import fs from "node:fs";
@@ -25,6 +26,8 @@ const PORT = Number(process.env.E2E_PORT || 9352);
 const OWN_PROFILE = !process.env.E2E_PROFILE;
 const PROFILE = process.env.E2E_PROFILE || path.join(os.tmpdir(), `office-ext-latex-e2e-${process.pid}`);
 const SHOTS = process.env.E2E_SHOTS || "";
+// Multiplies the performance budgets below (default 1). CI sets it for slow shared runners.
+const PERF = Math.max(1, Number(process.env.E2E_PERF_FACTOR) || 1);
 const CTRL = 2, SHIFT = 8;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -505,7 +508,7 @@ const TESTS = [
     await p.setFiles([file]);
     await p.waitFor("__officeViewer.doc?.name === 'big.tex' && document.querySelectorAll('#latex-view .lx-l').length > 10000 && document.querySelectorAll('#latex-view .ltx-section').length > 100", 30000);
     const openMs = Date.now() - t0;
-    check(`1 MB file opens with highlighted source and preview (${openMs} ms)`, openMs < 8000, openMs);
+    check(`1 MB file opens with highlighted source and preview (${openMs} ms)`, openMs < 8000 * PERF, openMs);
     const lines = await p.eval("document.querySelectorAll('#latex-view .lx-l').length");
     check("every source line has a line element", lines === big.split("\n").length, { lines, expected: big.split("\n").length });
     await p.focusEditor();
@@ -530,8 +533,8 @@ const TESTS = [
       return { render: Math.round(t1 - t0), layout: Math.round(t2 - t1), preview: Math.round(t3 - t2), highlight: Math.round(t4 - t3) };
     })()`);
     console.log(`      timing (ms): view render ${t.render} (incl. first preview), layout ${t.layout}, preview re-render ${t.preview}`);
-    check("1 MB: the editor is ready in under 3.5 s (preview follows)", t.render + t.layout < 3500, t);
-    check("1 MB: preview re-render under 2 s", t.preview < 2000, t);
+    check(`1 MB: the editor is ready in under ${3.5 * PERF} s (preview follows)`, t.render + t.layout < 3500 * PERF, t);
+    check(`1 MB: preview re-render under ${2 * PERF} s`, t.preview < 2000 * PERF, t);
   }],
 ];
 
