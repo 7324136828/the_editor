@@ -33,6 +33,34 @@ The first `--crx` build creates `office-chrome-extension/key.pem`. That key
 fixes the extension ID, so keep it safe and never commit it (`*.pem` is
 git-ignored).
 
+## Build a combined extension + backend zip locally
+
+The combined zip contains the unpacked extension under `extension/` and backend
+binaries under `backend/<platform>/`. To build one for the current platform,
+build the extension and backend, copy the backend into a staging directory using
+its release-artifact name, then run the bundler. On Linux x64:
+
+```sh
+cd office-chrome-extension
+node tools/build.mjs --out dist
+cd ../src
+cargo build --release --locked -p office-backend
+mkdir -p ../bundle-backend
+cp target/release/office-backend ../bundle-backend/office-backend-linux-x64
+cd ..
+version=$(node -p "require('./office-chrome-extension/manifest.json').version")
+python3 tools/package-release-bundle.py \
+  --version "$version" \
+  --extension-zip office-chrome-extension/dist/extension.zip \
+  --backend-dir bundle-backend \
+  --platform linux-x64 \
+  --output "office-editor-$version-with-backend.zip"
+```
+
+Use `--platform windows-x64` or `--platform macos-arm64` for those binaries. The
+CI release build passes no `--platform` flag, so the script requires and bundles
+all three platform binaries.
+
 ## Continuous integration
 
 [`.github/workflows/chrome-extension.yml`](.github/workflows/chrome-extension.yml) runs on every push to
@@ -45,7 +73,8 @@ git-ignored).
 | Backend tests | `cargo test --locked` in `src/` |
 | Build packed extension | Builds and verifies a signed `office-editor-<version>.crx` plus `office-editor-<version>.zip`, and uploads them as the `office-editor-extension-<version>` artifact with `SHA256SUMS.txt` and `build-info.json` (version and extension ID) |
 | Backend binary | Release builds of `office-backend` for Linux x64, Windows x64 and macOS arm64 (tags and manual runs only) |
-| Publish GitHub release | For tags `v*` that match the manifest version (for example `v0.3.0`): creates a GitHub release with the `.crx`, the `.zip` and the backend binaries attached |
+| Combined extension + backend bundle | Unpacks the extension zip and packages it with the backend binaries as `office-editor-<version>-with-backend.zip` (tags and manual runs only) |
+| Publish GitHub release | For tags `v*` that match the manifest version (for example `v0.3.0`): creates a GitHub release with the combined bundle, `.crx`, standalone extension `.zip` and individual backend binaries attached |
 
 ### Signing key (recommended)
 
